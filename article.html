@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>commit. — Briefing</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  /* ==========================================================================
+     Design Tokens — identisch zu index.html, für ein konsistentes Erlebnis
+     ========================================================================== */
+  :root{
+    --bg:            #0B0B0B;
+    --card:          #16181D;
+    --card-hover:    #1E2128;
+    --text:          #F5F5F5;
+    --text-secondary:#A1A1AA;
+    --accent:        #5B8CFF;
+    --accent-dim:    rgba(91, 140, 255, 0.14);
+    --border:        rgba(255, 255, 255, 0.07);
+    --border-strong: rgba(255, 255, 255, 0.14);
+
+    --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    --radius-lg: 24px;
+    --radius-md: 16px;
+    --radius-sm: 10px;
+
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-sans);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+
+  a{ color:inherit; text-decoration:none; }
+  ::selection{ background:var(--accent-dim); color:var(--text); }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.01ms !important; transition-duration:0.01ms !important; }
+  }
+
+  .wrap{
+    max-width:760px;
+    margin:0 auto;
+    padding:0 24px 120px;
+  }
+
+  /* ==========================================================================
+     Top bar: back-button + logo
+     ========================================================================== */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:32px 0 0;
+  }
+
+  .back-link{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-family:var(--font-mono);
+    font-size:13px;
+    color:var(--text-secondary);
+    padding:8px 12px;
+    border-radius:100px;
+    transition:color 200ms var(--ease), background 200ms var(--ease);
+  }
+
+  .back-link:hover{
+    color:var(--text);
+    background:var(--card);
+  }
+
+  .back-link svg{ width:14px; height:14px; }
+
+  .logo{
+    font-size:14px;
+    font-weight:600;
+    font-family:var(--font-mono);
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  .logo::before{
+    content:"";
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:var(--accent);
+    box-shadow:0 0 0 3px var(--accent-dim);
+  }
+
+  /* ==========================================================================
+     Newsletter header
+     ========================================================================== */
+  .issue-header{
+    padding:56px 0 48px;
+    border-bottom:1px solid var(--border);
+    margin-bottom:48px;
+  }
+
+  .issue-date{
+    font-family:var(--font-mono);
+    font-size:13px;
+    color:var(--accent);
+    margin-bottom:18px;
+  }
+
+  .issue-header h1{
+    font-size:clamp(28px, 4.6vw, 40px);
+    font-weight:700;
+    letter-spacing:-0.02em;
+    line-height:1.2;
+    margin-bottom:12px;
+  }
+
+  .issue-header .subtitle{
+    font-size:17px;
+    color:var(--text-secondary);
+    margin-bottom:20px;
+  }
+
+  .issue-read-time{
+    font-family:var(--font-mono);
+    font-size:13px;
+    color:var(--text-secondary);
+  }
+
+  /* ==========================================================================
+     Article cards
+     ========================================================================== */
+  .articles-list{
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+  }
+
+  .article-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    overflow:hidden;
+    transition:border-color 260ms var(--ease), transform 260ms var(--ease), box-shadow 260ms var(--ease);
+  }
+
+  .article-card:hover{
+    border-color:var(--border-strong);
+    transform:translateY(-2px);
+    box-shadow:0 20px 48px -22px rgba(0,0,0,0.5);
+  }
+
+  .article-image-wrap{
+    width:100%;
+    aspect-ratio:16/9;
+    overflow:hidden;
+    background:var(--card-hover);
+  }
+
+  .article-image-wrap img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+    opacity:0;
+    transition:opacity 500ms var(--ease);
+  }
+
+  .article-image-wrap img.loaded{ opacity:1; }
+
+  .article-body{
+    padding:28px 28px 30px;
+  }
+
+  .article-meta-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:16px;
+  }
+
+  .category-tag{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    font-family:var(--font-mono);
+    font-size:11.5px;
+    font-weight:500;
+    letter-spacing:0.02em;
+    color:var(--accent);
+    background:var(--accent-dim);
+    padding:4px 10px 4px 8px;
+    border-radius:100px;
+  }
+
+  .category-tag svg{ width:11px; height:11px; }
+
+  /* Wichtigkeit als dezente Dot-Reihe — 1 bis 3 gefüllte Punkte */
+  .importance-dots{
+    display:inline-flex;
+    align-items:center;
+    gap:3px;
+  }
+
+  .importance-dots span{
+    width:5px;
+    height:5px;
+    border-radius:50%;
+    background:var(--border-strong);
+  }
+
+  .importance-dots span.filled{ background:var(--accent); }
+
+  .article-card h3{
+    font-size:20px;
+    font-weight:600;
+    letter-spacing:-0.005em;
+    line-height:1.35;
+    margin-bottom:12px;
+  }
+
+  .article-card .summary{
+    font-size:15px;
+    color:var(--text-secondary);
+    line-height:1.65;
+    margin-bottom:18px;
+  }
+
+  .why-it-matters{
+    background:rgba(255,255,255,0.02);
+    border-left:2px solid var(--accent);
+    border-radius:0 var(--radius-sm) var(--radius-sm) 0;
+    padding:14px 16px;
+    margin-bottom:18px;
+  }
+
+  .why-it-matters .label{
+    font-family:var(--font-mono);
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:0.03em;
+    text-transform:uppercase;
+    color:var(--accent);
+    display:block;
+    margin-bottom:6px;
+  }
+
+  .why-it-matters p{
+    font-size:14px;
+    color:var(--text-secondary);
+    line-height:1.6;
+  }
+
+  .article-source{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-family:var(--font-mono);
+    font-size:13px;
+    color:var(--text-secondary);
+    transition:color 200ms var(--ease);
+  }
+
+  .article-source:hover{ color:var(--accent); }
+
+  .article-source svg{ width:12px; height:12px; }
+
+  /* ==========================================================================
+     States
+     ========================================================================== */
+  .state-block{
+    text-align:center;
+    padding:100px 20px;
+    color:var(--text-secondary);
+    font-size:14px;
+  }
+
+  .state-block .state-icon{
+    font-family:var(--font-mono);
+    font-size:13px;
+    color:var(--accent);
+    display:block;
+    margin-bottom:10px;
+  }
+
+  .skeleton{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    height:220px;
+    position:relative;
+    overflow:hidden;
+  }
+
+  .skeleton::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(100deg, transparent 30%, rgba(255,255,255,0.04) 50%, transparent 70%);
+    animation:shimmer 1.6s ease-in-out infinite;
+  }
+
+  @keyframes shimmer{
+    from{ transform:translateX(-100%); }
+    to{ transform:translateX(100%); }
+  }
+
+  @media (max-width: 600px){
+    .article-body{ padding:22px 20px 24px; }
+    .issue-header{ padding:40px 0 36px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="wrap">
+    <div class="topbar">
+      <a class="back-link" href="index.html">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M13 8H3M7 4l-4 4 4 4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        All briefings
+      </a>
+      <span class="logo">commit.</span>
+    </div>
+
+    <div id="issue-header-container">
+      <!-- wird dynamisch befüllt -->
+    </div>
+
+    <div class="articles-list" id="articles-container">
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script>
+    // ==========================================================================
+    // Supabase-Konfiguration
+    // Diese Platzhalter mit deinen eigenen Projektdaten ersetzen.
+    // ==========================================================================
+    const SUPABASE_URL = "DEINE_SUPABASE_URL";
+    const SUPABASE_ANON_KEY = "DEIN_SUPABASE_ANON_KEY";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const issueHeaderContainer = document.getElementById("issue-header-container");
+    const articlesContainer = document.getElementById("articles-container");
+
+    /**
+     * Liest den "id"-Parameter aus der URL, z. B. article.html?id=12
+     */
+    function getNewsletterIdFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("id");
+    }
+
+    function formatDate(dateString) {
+      const date = new Date(dateString + "T00:00:00");
+      return date.toLocaleDateString("de-DE", {
+        weekday: "short",
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+    }
+
+    function escapeHtml(value) {
+      if (value === null || value === undefined) return "";
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function renderState(container, icon, message) {
+      container.innerHTML = `
+        <div class="state-block">
+          <span class="state-icon">${icon}</span>
+          ${message}
+        </div>
+      `;
+    }
+
+    function renderIssueHeader(newsletter) {
+      issueHeaderContainer.innerHTML = `
+        <header class="issue-header">
+          <div class="issue-date">${formatDate(newsletter.date)}</div>
+          <h1>${escapeHtml(newsletter.title)}</h1>
+          ${newsletter.subtitle ? `<p class="subtitle">${escapeHtml(newsletter.subtitle)}</p>` : ""}
+          <div class="issue-read-time">${newsletter.reading_time} min read</div>
+        </header>
+      `;
+    }
+
+    /**
+     * Baut die Wichtigkeits-Dots (1–3 gefüllte Punkte von 3).
+     */
+    function renderImportanceDots(importance) {
+      const level = Math.min(3, Math.max(1, importance ?? 1));
+      let dots = "";
+      for (let i = 1; i <= 3; i++) {
+        dots += `<span class="${i <= level ? "filled" : ""}"></span>`;
+      }
+      return `<span class="importance-dots" title="Importance ${level}/3">${dots}</span>`;
+    }
+
+    /**
+     * Baut das Markup für eine einzelne Artikel-Card.
+     * Kein Bild-Platzhalter, falls image_url fehlt (kein reservierter Leerraum).
+     */
+    function renderArticleCard(article) {
+      const imageBlock = article.image_url
+        ? `
+          <div class="article-image-wrap">
+            <img
+              src="${escapeHtml(article.image_url)}"
+              alt=""
+              loading="lazy"
+              onload="this.classList.add('loaded')"
+              onerror="this.closest('.article-image-wrap').remove()"
+            />
+          </div>
+        `
+        : "";
+
+      const sourceBlock = article.source_url
+        ? `
+          <a class="article-source" href="${escapeHtml(article.source_url)}" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 10l6-6M8 4h4v4M6.5 4H4a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1v-2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            ${escapeHtml(article.source_name || "Source")}
+          </a>
+        `
+        : "";
+
+      return `
+        <article class="article-card">
+          ${imageBlock}
+          <div class="article-body">
+            <div class="article-meta-row">
+              <span class="category-tag">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
+                  <circle cx="5" cy="4" r="2"/>
+                  <circle cx="5" cy="12" r="2"/>
+                  <path d="M5 6v4M5 8h6a2 2 0 0 0 2-2V5" stroke-linecap="round"/>
+                </svg>
+                ${escapeHtml(article.category)}
+              </span>
+              ${renderImportanceDots(article.importance)}
+            </div>
+            <h3>${escapeHtml(article.headline)}</h3>
+            ${article.summary ? `<p class="summary">${escapeHtml(article.summary)}</p>` : ""}
+            ${article.why_it_matters ? `
+              <div class="why-it-matters">
+                <span class="label">Why it matters</span>
+                <p>${escapeHtml(article.why_it_matters)}</p>
+              </div>
+            ` : ""}
+            ${sourceBlock}
+          </div>
+        </article>
+      `;
+    }
+
+    /**
+     * Lädt den Newsletter (per URL-ID) und alle zugehörigen Artikel,
+     * sortiert nach display_order, und rendert beides dynamisch.
+     */
+    async function loadIssue() {
+      const newsletterId = getNewsletterIdFromUrl();
+
+      if (!newsletterId) {
+        renderState(issueHeaderContainer, "// missing id", "No briefing selected.");
+        articlesContainer.innerHTML = "";
+        return;
+      }
+
+      const { data: newsletter, error: newsletterError } = await supabase
+        .from("newsletters")
+        .select("*")
+        .eq("id", newsletterId)
+        .single();
+
+      if (newsletterError || !newsletter) {
+        console.error("Fehler beim Laden des Newsletters:", newsletterError);
+        renderState(issueHeaderContainer, "// not found", "This briefing could not be found.");
+        articlesContainer.innerHTML = "";
+        return;
+      }
+
+      renderIssueHeader(newsletter);
+      document.title = `commit. — ${newsletter.title}`;
+
+      const { data: articles, error: articlesError } = await supabase
+        .from("articles")
+        .select("*")
+        .eq("newsletter_id", newsletterId)
+        .order("display_order", { ascending: true });
+
+      if (articlesError) {
+        console.error("Fehler beim Laden der Artikel:", articlesError);
+        renderState(articlesContainer, "// error", "Could not load the articles for this briefing.");
+        return;
+      }
+
+      if (!articles || articles.length === 0) {
+        renderState(articlesContainer, "// empty", "No articles in this briefing yet.");
+        return;
+      }
+
+      articlesContainer.innerHTML = articles.map(renderArticleCard).join("");
+    }
+
+    loadIssue();
+  </script>
+
+</body>
+</html>
