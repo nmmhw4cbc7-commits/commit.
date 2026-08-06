@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>commit. — Daily IT Briefing</title>
+<meta name="description" content="The most important IT news. Every single day." />
+
+<!-- Typografie: Inter für UI/Fließtext, JetBrains Mono für Metadaten (Datum, Lesezeit, Kategorie) —
+     eine bewusste Anspielung auf das "commit."-Thema, ohne verspielt zu wirken. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  /* ==========================================================================
+     Design Tokens
+     ========================================================================== */
+  :root{
+    --bg:            #0B0B0B;
+    --card:          #16181D;
+    --card-hover:    #1E2128;
+    --text:          #F5F5F5;
+    --text-secondary:#A1A1AA;
+    --accent:        #5B8CFF;
+    --accent-dim:    rgba(91, 140, 255, 0.14);
+    --border:        rgba(255, 255, 255, 0.07);
+    --border-strong: rgba(255, 255, 255, 0.14);
+
+    --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    --radius-lg: 24px;
+    --radius-md: 16px;
+    --radius-sm: 10px;
+
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+
+  html{ scroll-behavior:smooth; }
+
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-sans);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+
+  a{ color:inherit; text-decoration:none; }
+
+  ::selection{ background:var(--accent-dim); color:var(--text); }
+
+  /* Respect reduced motion preferences */
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.01ms !important; transition-duration:0.01ms !important; }
+    html{ scroll-behavior:auto; }
+  }
+
+  /* ==========================================================================
+     Layout shell
+     ========================================================================== */
+  .wrap{
+    max-width:920px;
+    margin:0 auto;
+    padding:0 24px;
+  }
+
+  header.site-header{
+    padding:64px 0 40px;
+    text-align:center;
+  }
+
+  .logo{
+    font-size:15px;
+    font-weight:600;
+    font-family:var(--font-mono);
+    letter-spacing:0.02em;
+    color:var(--text);
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  .logo::before{
+    content:"";
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:var(--accent);
+    box-shadow:0 0 0 3px var(--accent-dim);
+  }
+
+  .eyebrow{
+    margin-top:28px;
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--accent);
+  }
+
+  h1.tagline{
+    margin-top:14px;
+    font-size:clamp(28px, 4.2vw, 42px);
+    font-weight:700;
+    letter-spacing:-0.02em;
+    line-height:1.15;
+    color:var(--text);
+  }
+
+  h1.tagline .dim{ color:var(--text-secondary); }
+
+  /* ==========================================================================
+     Hero card (today's briefing)
+     ========================================================================== */
+  section.hero-section{
+    padding:24px 0 8px;
+  }
+
+  .hero-card{
+    display:block;
+    background:linear-gradient(165deg, var(--card) 0%, #131519 100%);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    padding:44px 40px;
+    cursor:pointer;
+    position:relative;
+    overflow:hidden;
+    transition:transform 320ms var(--ease), box-shadow 320ms var(--ease), border-color 320ms var(--ease);
+  }
+
+  /* Signature interaction: an accent "staged change" bar sweeps in on hover,
+     echoing the diff-line vernacular of the "commit." brand. */
+  .hero-card::before{
+    content:"";
+    position:absolute;
+    top:0; left:0;
+    width:3px;
+    height:100%;
+    background:var(--accent);
+    transform:scaleY(0);
+    transform-origin:top;
+    transition:transform 320ms var(--ease);
+  }
+
+  .hero-card:hover{
+    transform:translateY(-4px);
+    box-shadow:0 24px 60px -20px rgba(0,0,0,0.55), 0 0 0 1px var(--border-strong);
+  }
+
+  .hero-card:hover::before{ transform:scaleY(1); }
+
+  .hero-meta-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-family:var(--font-mono);
+    font-size:13px;
+    color:var(--text-secondary);
+    margin-bottom:22px;
+  }
+
+  .badge-live{
+    font-family:var(--font-mono);
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    color:var(--accent);
+    background:var(--accent-dim);
+    padding:4px 10px;
+    border-radius:100px;
+  }
+
+  .hero-card h2{
+    font-size:clamp(24px, 3.2vw, 34px);
+    font-weight:700;
+    letter-spacing:-0.01em;
+    line-height:1.2;
+    margin-bottom:10px;
+  }
+
+  .hero-card .subtitle{
+    font-size:17px;
+    color:var(--text-secondary);
+    margin-bottom:16px;
+  }
+
+  .hero-card .summary{
+    font-size:15px;
+    color:var(--text-secondary);
+    line-height:1.65;
+    max-width:640px;
+    margin-bottom:28px;
+  }
+
+  .hero-footer{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:16px;
+  }
+
+  .hero-stats{
+    display:flex;
+    gap:20px;
+    font-family:var(--font-mono);
+    font-size:13px;
+    color:var(--text-secondary);
+  }
+
+  .cta-button{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:var(--accent);
+    color:#0B0B0B;
+    font-weight:600;
+    font-size:14px;
+    padding:12px 20px;
+    border-radius:var(--radius-sm);
+    transition:transform 220ms var(--ease), opacity 220ms var(--ease);
+  }
+
+  .hero-card:hover .cta-button{ transform:translateX(3px); }
+
+  .cta-button svg{ width:14px; height:14px; transition:transform 220ms var(--ease); }
+  .hero-card:hover .cta-button svg{ transform:translateX(2px); }
+
+  /* ==========================================================================
+     Archive
+     ========================================================================== */
+  section.archive-section{
+    padding:72px 0 120px;
+  }
+
+  .archive-heading{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:24px;
+    padding-bottom:16px;
+    border-bottom:1px solid var(--border);
+  }
+
+  .archive-heading h3{
+    font-size:14px;
+    font-weight:600;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    color:var(--text-secondary);
+  }
+
+  .archive-count{
+    font-family:var(--font-mono);
+    font-size:13px;
+    color:var(--text-secondary);
+  }
+
+  .archive-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+  }
+
+  .archive-card{
+    display:flex;
+    flex-direction:column;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius-md);
+    padding:26px 24px;
+    cursor:pointer;
+    position:relative;
+    overflow:hidden;
+    transition:transform 260ms var(--ease), background 260ms var(--ease), box-shadow 260ms var(--ease), border-color 260ms var(--ease);
+  }
+
+  .archive-card::before{
+    content:"";
+    position:absolute;
+    top:0; left:0;
+    width:2px;
+    height:100%;
+    background:var(--accent);
+    transform:scaleY(0);
+    transform-origin:top;
+    transition:transform 260ms var(--ease);
+  }
+
+  .archive-card:hover{
+    background:var(--card-hover);
+    transform:translateY(-3px);
+    box-shadow:0 16px 40px -18px rgba(0,0,0,0.5);
+    border-color:var(--border-strong);
+  }
+
+  .archive-card:hover::before{ transform:scaleY(1); }
+
+  .archive-date{
+    font-family:var(--font-mono);
+    font-size:12px;
+    color:var(--accent);
+    margin-bottom:12px;
+  }
+
+  .archive-card h4{
+    font-size:18px;
+    font-weight:600;
+    letter-spacing:-0.005em;
+    line-height:1.35;
+    margin-bottom:8px;
+  }
+
+  .archive-card p{
+    font-size:14px;
+    color:var(--text-secondary);
+    line-height:1.55;
+    flex:1;
+    margin-bottom:16px;
+    display:-webkit-box;
+    -webkit-line-clamp:3;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+
+  .archive-card .read-time{
+    font-family:var(--font-mono);
+    font-size:12px;
+    color:var(--text-secondary);
+  }
+
+  /* ==========================================================================
+     States: loading / empty / error
+     ========================================================================== */
+  .state-block{
+    text-align:center;
+    padding:60px 20px;
+    color:var(--text-secondary);
+    font-size:14px;
+  }
+
+  .state-block .state-icon{
+    font-family:var(--font-mono);
+    font-size:13px;
+    color:var(--accent);
+    display:block;
+    margin-bottom:10px;
+  }
+
+  .skeleton{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    height:280px;
+    position:relative;
+    overflow:hidden;
+  }
+
+  .skeleton::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(100deg, transparent 30%, rgba(255,255,255,0.04) 50%, transparent 70%);
+    animation:shimmer 1.6s ease-in-out infinite;
+  }
+
+  @keyframes shimmer{
+    from{ transform:translateX(-100%); }
+    to{ transform:translateX(100%); }
+  }
+
+  footer.site-footer{
+    text-align:center;
+    padding:0 0 60px;
+    font-family:var(--font-mono);
+    font-size:12px;
+    color:var(--text-secondary);
+  }
+
+  /* ==========================================================================
+     Responsive
+     ========================================================================== */
+  @media (max-width: 720px){
+    header.site-header{ padding:48px 0 32px; }
+    .hero-card{ padding:32px 24px; }
+    .archive-grid{ grid-template-columns:1fr; }
+  }
+
+  @media (max-width: 480px){
+    .hero-footer{ align-items:flex-start; }
+  }
+</style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="wrap">
+      <span class="logo">commit.</span>
+      <p class="eyebrow">Daily IT Briefing</p>
+      <h1 class="tagline">The most important IT news.<br><span class="dim">Every single day.</span></h1>
+    </div>
+  </header>
+
+  <main class="wrap">
+
+    <!-- ============================================================
+         HERO: heutige Ausgabe — wird dynamisch aus Supabase befüllt
+         ============================================================ -->
+    <section class="hero-section">
+      <div id="hero-container">
+        <div class="skeleton"></div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         ARCHIV: alle älteren Ausgaben — wird dynamisch befüllt
+         ============================================================ -->
+    <section class="archive-section">
+      <div class="archive-heading">
+        <h3>Archive</h3>
+        <span class="archive-count" id="archive-count"></span>
+      </div>
+      <div class="archive-grid" id="archive-container">
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">commit. — built for people who ship</footer>
+
+  <!-- Supabase JS client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script>
+    // ==========================================================================
+    // Supabase-Konfiguration
+    // Diese Platzhalter mit deinen eigenen Projektdaten ersetzen.
+    // ==========================================================================
+    const SUPABASE_URL = "DEINE_SUPABASE_URL";
+    const SUPABASE_ANON_KEY = "DEIN_SUPABASE_ANON_KEY";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Referenzen auf die Container, die dynamisch befüllt werden
+    const heroContainer = document.getElementById("hero-container");
+    const archiveContainer = document.getElementById("archive-container");
+    const archiveCountEl = document.getElementById("archive-count");
+
+    /**
+     * Formatiert ein Datum im Stil eines Git-Log-Zeitstempels,
+     * passend zum "commit."-Branding (z. B. "Do, 06. Aug 2026").
+     */
+    function formatDate(dateString) {
+      const date = new Date(dateString + "T00:00:00");
+      return date.toLocaleDateString("de-DE", {
+        weekday: "short",
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+    }
+
+    /**
+     * Escaped HTML-Sonderzeichen, um XSS über Datenbankinhalte zu verhindern,
+     * da alle Texte dynamisch aus Supabase kommen.
+     */
+    function escapeHtml(value) {
+      if (value === null || value === undefined) return "";
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    /**
+     * Baut das Markup für die Hero-Card (heutige/aktuellste Ausgabe).
+     */
+    function renderHero(newsletter, articleCount) {
+      heroContainer.innerHTML = `
+        <a class="hero-card" href="article.html?id=${newsletter.id}" aria-label="Read ${escapeHtml(newsletter.title)}">
+          <div class="hero-meta-row">
+            <span class="badge-live">Latest</span>
+            <span>${formatDate(newsletter.date)}</span>
+          </div>
+          <h2>${escapeHtml(newsletter.title)}</h2>
+          ${newsletter.subtitle ? `<p class="subtitle">${escapeHtml(newsletter.subtitle)}</p>` : ""}
+          ${newsletter.summary ? `<p class="summary">${escapeHtml(newsletter.summary)}</p>` : ""}
+          <div class="hero-footer">
+            <div class="hero-stats">
+              <span>${articleCount} article${articleCount === 1 ? "" : "s"}</span>
+              <span>${newsletter.reading_time} min read</span>
+            </div>
+            <span class="cta-button">
+              Read today's briefing
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 8h10M9 4l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+          </div>
+        </a>
+      `;
+    }
+
+    /**
+     * Baut das Markup für eine einzelne Archiv-Card.
+     */
+    function renderArchiveCard(newsletter) {
+      return `
+        <a class="archive-card" href="article.html?id=${newsletter.id}">
+          <span class="archive-date">${formatDate(newsletter.date)}</span>
+          <h4>${escapeHtml(newsletter.title)}</h4>
+          ${newsletter.summary ? `<p>${escapeHtml(newsletter.summary)}</p>` : "<p></p>"}
+          <span class="read-time">${newsletter.reading_time} min read</span>
+        </a>
+      `;
+    }
+
+    /**
+     * Zeigt einen Zustandsblock (Fehler / leer) anstelle von Cards.
+     */
+    function renderState(container, icon, message) {
+      container.innerHTML = `
+        <div class="state-block">
+          <span class="state-icon">${icon}</span>
+          ${message}
+        </div>
+      `;
+    }
+
+    /**
+     * Lädt die Anzahl der Artikel für einen Newsletter (für die Hero-Card).
+     */
+    async function getArticleCount(newsletterId) {
+      const { count, error } = await supabase
+        .from("articles")
+        .select("id", { count: "exact", head: true })
+        .eq("newsletter_id", newsletterId);
+
+      if (error) {
+        console.error("Fehler beim Zählen der Artikel:", error);
+        return 0;
+      }
+      return count ?? 0;
+    }
+
+    /**
+     * Lädt alle Newsletter (neueste zuerst), rendert den ersten als Hero
+     * und alle übrigen als Archiv-Grid.
+     */
+    async function loadNewsletters() {
+      const { data: newsletters, error } = await supabase
+        .from("newsletters")
+        .select("*")
+        .order("date", { ascending: false });
+
+      if (error) {
+        console.error("Fehler beim Laden der Newsletter:", error);
+        renderState(heroContainer, "// error", "Could not load today's briefing. Please try again later.");
+        renderState(archiveContainer, "// error", "Could not load the archive.");
+        return;
+      }
+
+      if (!newsletters || newsletters.length === 0) {
+        renderState(heroContainer, "// empty", "No briefings published yet. Check back soon.");
+        archiveContainer.innerHTML = "";
+        archiveCountEl.textContent = "";
+        return;
+      }
+
+      const [latest, ...rest] = newsletters;
+
+      // Hero: aktuellste Ausgabe
+      const articleCount = await getArticleCount(latest.id);
+      renderHero(latest, articleCount);
+
+      // Archiv: alle übrigen Ausgaben
+      if (rest.length === 0) {
+        archiveContainer.innerHTML = "";
+        archiveCountEl.textContent = "";
+        return;
+      }
+
+      archiveContainer.innerHTML = rest.map(renderArchiveCard).join("");
+      archiveCountEl.textContent = `${rest.length} issue${rest.length === 1 ? "" : "s"}`;
+    }
+
+    // Beim Laden der Seite direkt starten
+    loadNewsletters();
+  </script>
+
+</body>
+</html>
